@@ -384,8 +384,8 @@ public final class PlanUtils {
     return new TableDesc(
         TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
         .makeProperties(
-            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,separatorCode,
-            serdeConstants.SERIALIZATION_LIB,MetadataTypedColumnsetSerDe.class.getName()));
+            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, separatorCode,
+            serdeConstants.SERIALIZATION_LIB, MetadataTypedColumnsetSerDe.class.getName()));
   }
 
   /**
