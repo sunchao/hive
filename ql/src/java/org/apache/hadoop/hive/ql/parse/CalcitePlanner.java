@@ -103,6 +103,7 @@ import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -373,8 +374,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
   static String canHandleQbForCbo(QueryProperties queryProperties, HiveConf conf,
       boolean topLevelQB, boolean verbose) {
     boolean isInTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
+    // TODO: HIVEMAPREDMODE is deprecated. Why does this test-only exception exist?
     boolean isStrictTest = isInTest
-        && !conf.getVar(ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("nonstrict");
+            && "strict".equals(HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE));
     boolean hasEnoughJoins = !topLevelQB || (queryProperties.getJoinCount() > 1) || isInTest;
 
     if (!isStrictTest && hasEnoughJoins && !queryProperties.hasClusterBy()
@@ -389,7 +391,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     String msg = "";
     if (verbose) {
       if (isStrictTest)
-        msg += "is in test running in mode other than nonstrict; ";
+        msg += "is in test running in strict mode (deprecated); ";
       if (!hasEnoughJoins)
         msg += "has too few joins; ";
       if (queryProperties.hasClusterBy())
@@ -1929,10 +1931,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 1. OB Expr sanity test
         // in strict mode, in the presence of order by, limit must be specified
         Integer limit = qb.getParseInfo().getDestLimit(dest);
-        if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")
-            && limit == null) {
-          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST,
-              ErrorMsg.NO_LIMIT_WITH_ORDERBY.getMsg()));
+        if (limit == null) {
+          String error = StrictChecks.checkNoLimit(conf);
+          if (error != null) {
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST, error));
+          }
         }
 
         // 2. Walk through OB exprs and extract field collations and additional
