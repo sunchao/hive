@@ -28,6 +28,7 @@ public class MetricsConstant {
 
   public static String OPEN_CONNECTIONS = "open_connections";
   public static String OPEN_OPERATIONS = "open_operations";
+  public static final String CUMULATIVE_CONNECTION_COUNT = "cumulative_connection_count";
 
   public static final String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
   public static final String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
