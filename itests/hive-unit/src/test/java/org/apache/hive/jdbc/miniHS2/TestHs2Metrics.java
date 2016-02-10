@@ -58,6 +58,7 @@ public class TestHs2Metrics {
         MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_semanticAnalyze", 1);
         MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_compile", 1);
         MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_hs2_operation_RUNNING", 1);
+        MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_hs2_sql_operation_RUNNING", 1);
       } catch (Exception e) {
         throw new SemanticException("metrics verification failed", e);
       }
@@ -105,6 +106,9 @@ public class TestHs2Metrics {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_hs2_operation_PENDING", 1);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_hs2_operation_RUNNING", 1);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "hs2_completed_operation_FINISHED", 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_hs2_sql_operation_PENDING", 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_hs2_sql_operation_RUNNING", 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "hs2_completed_sql_operation_FINISHED", 1);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_Driver.run", 1);
 
     //but there should be no more active calls.
@@ -139,6 +143,7 @@ public class TestHs2Metrics {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_parse", 0);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_semanticAnalyze", 0);
 
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_hs2_sql_operation_RUNNING", 0);
     serviceClient.closeSession(sessHandle);
   }
 
