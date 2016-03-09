@@ -58,6 +58,8 @@ public class MergeFileWork extends MapWork {
   // internal input format used by CombineHiveInputFormat
   private Class<? extends InputFormat> internalInputFormat;
 
+  public MergeFileWork() {}
+
   public MergeFileWork(List<Path> inputPaths, Path outputDir,
       String srcTblInputFormat) {
     this(inputPaths, outputDir, false, srcTblInputFormat);
