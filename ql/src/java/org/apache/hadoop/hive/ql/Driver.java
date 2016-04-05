@@ -1564,7 +1564,9 @@ public class Driver implements CommandProcessor {
             continue;
 
           } else {
+            setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
             hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+            hookContext.setErrorMessage(errorMessage);
             // Get all the failure execution hooks and execute them.
             for (Hook ofh : getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
               perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
@@ -1573,7 +1575,6 @@ public class Driver implements CommandProcessor {
 
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
             }
-            setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
             SQLState = "08S01";
             console.printError(errorMessage);
             driverCxt.shutdown();
