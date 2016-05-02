@@ -229,6 +229,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static String INTERMEDIATE_EXTRACTED_DIR_SUFFIX;
 
   private MetaDataFormatter formatter;
+  private Task<? extends Serializable> subtask = null;
+
+  public Task<? extends Serializable> getSubtask() {
+    return subtask;
+  }
 
   @Override
   public boolean requireLock() {
@@ -598,6 +603,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     taskExec.initialize(db.getConf(), null, driverCxt);
     taskExec.setWork(mergeWork);
     taskExec.setQueryPlan(this.getQueryPlan());
+    subtask = taskExec;
     int ret = taskExec.execute(driverCxt);
 
     return ret;
@@ -4221,6 +4227,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       taskExec.initialize(db.getConf(), null, driverCxt);
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(this.getQueryPlan());
+      subtask = taskExec;
       return taskExec.execute(driverCxt);
     }
 
