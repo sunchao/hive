@@ -98,6 +98,7 @@ public class TezJobMonitor {
   private int lines;
   private PrintStream out;
   private String separator;
+  private String diagnosticMesg;
 
   private transient LogHelper console;
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -389,9 +390,12 @@ public class TezJobMonitor {
       } finally {
         if (done) {
           if (rc != 0 && status != null) {
+            StringBuilder sb = new StringBuilder("\nDiagnostic Messages for this Task:");
             for (String diag : status.getDiagnostics()) {
+              sb.append("\n").append(diag);
               console.printError(diag);
             }
+            diagnosticMesg = sb.toString();
           }
           shutdownList.remove(dagClient);
           break;
@@ -400,6 +404,10 @@ public class TezJobMonitor {
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     return rc;
+  }
+
+  public String getDiagnosticMesg() {
+    return diagnosticMesg;
   }
 
   /**

@@ -104,7 +104,10 @@ public class TaskRunner extends Thread {
       }
       t.printStackTrace();
     }
-    result.setExitVal(exitVal, tsk.getException());
+    result.setExitVal(exitVal);
+    if (tsk.getException() != null) {
+      result.setTaskError(tsk.getException());
+    }
   }
 
   public static long getTaskRunnerID () {

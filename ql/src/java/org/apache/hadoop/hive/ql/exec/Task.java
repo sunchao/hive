@@ -30,7 +30,10 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -91,6 +94,15 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected String id;
   protected T work;
+  private String diagnosticMesg;
+
+  public void setDiagnosticMessage(String diagnosticMesg) {
+    this.diagnosticMesg = diagnosticMesg;
+  }
+
+  public String getDiagnosticsMessage() {
+    return diagnosticMesg;
+  }
 
   private transient boolean fetchSource;
 
