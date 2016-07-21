@@ -24,11 +24,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -55,7 +57,8 @@ import parquet.schema.MessageTypeParser;
 
 import com.google.common.base.Strings;
 
-public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWritable> {
+public class ParquetRecordReaderWrapper implements RecordReader<Void, ArrayWritable>,
+    StatsProvidingRecordReader {
   public static final Log LOG = LogFactory.getLog(ParquetRecordReaderWrapper.class);
 
   private final long splitLen; // for getPos()
@@ -71,6 +74,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   private JobConf jobConf;
   private final ProjectionPusher projectionPusher;
   private List<BlockMetaData> filtedBlocks;
+  private final SerDeStats serDeStats;
 
   public ParquetRecordReaderWrapper(
       final ParquetInputFormat<ArrayWritable> newInputFormat,
@@ -90,6 +94,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
           throws IOException, InterruptedException {
     this.splitLen = oldSplit.getLength();
     this.projectionPusher = pusher;
+    this.serDeStats = new SerDeStats();
 
     jobConf = oldJobConf;
     final ParquetInputSplit split = getSplit(oldSplit, jobConf);
@@ -255,6 +260,13 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
 
       final ReadContext readContext = new DataWritableReadSupport()
           .init(jobConf, fileMetaData.getKeyValueMetaData(), fileMetaData.getSchema());
+
+      // Compute stats
+      for (BlockMetaData bmd : blocks) {
+        serDeStats.setRowCount(serDeStats.getRowCount() + bmd.getRowCount());
+        serDeStats.setRawDataSize(serDeStats.getRawDataSize() + bmd.getTotalByteSize());
+      }
+
       schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
           .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
       final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
@@ -308,4 +320,9 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   public List<BlockMetaData> getFiltedBlocks() {
     return filtedBlocks;
   }
+
+    @Override
+    public SerDeStats getStats() {
+      return serDeStats;
+    }
 }
