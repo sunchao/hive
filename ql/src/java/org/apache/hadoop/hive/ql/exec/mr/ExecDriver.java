@@ -436,6 +436,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       success = (returnVal == 0);
     } catch (Exception e) {
       e.printStackTrace();
+      setException(e);
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {
         mesg = "Ended Job = " + rj.getJobID() + mesg;
@@ -482,6 +483,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     } catch (Exception e) {
       // jobClose needs to execute successfully otherwise fail task
       if (success) {
+        setException(e);
         success = false;
         returnVal = 3;
         String mesg = "Job Commit failed with exception '" + Utilities.getNameMessage(e) + "'";

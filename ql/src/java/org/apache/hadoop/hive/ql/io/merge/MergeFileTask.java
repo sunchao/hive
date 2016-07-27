@@ -153,6 +153,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       success = (returnVal == 0);
 
     } catch (Exception e) {
+      setException(e);
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {
         mesg = "Ended Job = " + rj.getJobID() + mesg;
@@ -191,6 +192,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       } catch (Exception e) {
         // jobClose needs to execute successfully otherwise fail task
         if (success) {
+          setException(e);
           success = false;
           returnVal = 3;
           String mesg = "Job Commit failed with exception '" +
