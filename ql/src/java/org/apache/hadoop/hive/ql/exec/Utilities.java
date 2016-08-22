@@ -1185,7 +1185,6 @@ public final class Utilities {
       kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
-      removeField(kryo, AbstractOperatorDesc.class, "statistics");
       kryo.register(MapWork.class);
       kryo.register(ReduceWork.class);
       kryo.register(TableDesc.class);
