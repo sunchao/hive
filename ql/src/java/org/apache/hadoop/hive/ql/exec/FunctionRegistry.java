@@ -360,6 +360,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("corr", new GenericUDAFCorrelation());
     system.registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     system.registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
+    system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileApprox());
     system.registerGenericUDAF("collect_set", new GenericUDAFCollectSet());
     system.registerGenericUDAF("collect_list", new GenericUDAFCollectList());
 
