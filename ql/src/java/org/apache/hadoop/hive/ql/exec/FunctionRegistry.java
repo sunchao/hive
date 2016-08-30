@@ -349,6 +349,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("min", new GenericUDAFMin());
 
     system.registerGenericUDAF("sum", new GenericUDAFSum());
+    system.registerGenericUDAF("sum_float", new GenericUDAFSum());
     system.registerGenericUDAF("count", new GenericUDAFCount());
     system.registerGenericUDAF("avg", new GenericUDAFAverage());
     system.registerGenericUDAF("std", new GenericUDAFStd());
