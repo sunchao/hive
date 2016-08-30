@@ -400,6 +400,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("in_file", GenericUDFInFile.class);
     system.registerGenericUDF("instr", GenericUDFInstr.class);
     system.registerGenericUDF("locate", GenericUDFLocate.class);
+    system.registerGenericUDF("position", GenericUDFLocate.class);
     system.registerGenericUDF("elt", GenericUDFElt.class);
     system.registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
     system.registerGenericUDF("sort_array", GenericUDFSortArray.class);
