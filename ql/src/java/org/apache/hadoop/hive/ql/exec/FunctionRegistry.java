@@ -371,6 +371,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
 
     system.registerUDAF("percentile", UDAFPercentile.class);
+    system.registerUDAF("percentile_disc", UDAFPercentile.class);
 
 
     // Generic UDFs
