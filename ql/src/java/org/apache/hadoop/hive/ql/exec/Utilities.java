@@ -1250,7 +1250,6 @@ public final class Utilities {
       kryo.register( Arrays.asList( "" ).getClass(), new ArraysAsListSerializer() );
       kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       removeField(kryo, Operator.class, "colExprMap");
-      removeField(kryo, AbstractOperatorDesc.class, "statistics");
       kryo.register(MapWork.class);
       kryo.register(ReduceWork.class);
       kryo.register(TableDesc.class);
