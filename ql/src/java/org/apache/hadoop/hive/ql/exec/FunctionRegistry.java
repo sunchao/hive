@@ -296,6 +296,8 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("current_database", UDFCurrentDB.class);
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
+    system.registerGenericUDF("getdate", GenericUDFCurrentDate.class);
+    system.registerGenericUDF("sysdate", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
     system.registerGenericUDF("current_user", GenericUDFCurrentUser.class);
 
