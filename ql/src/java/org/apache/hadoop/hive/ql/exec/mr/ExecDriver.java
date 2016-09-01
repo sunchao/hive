@@ -427,6 +427,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
+      this.jobID = rj.getJobID();
       // replace it back
       if (pwd != null) {
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, pwd);
