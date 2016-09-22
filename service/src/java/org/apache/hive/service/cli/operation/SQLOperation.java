@@ -361,7 +361,10 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (shouldRunAsync()) {
       Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
-        backgroundHandle.cancel(true);
+        boolean success = backgroundHandle.cancel(true);
+        if (success) {
+          LOG.info("The running operation has been successfully interrupted.");
+        }
       }
     }
 
@@ -558,6 +561,13 @@ public class SQLOperation extends ExecuteStatementOperation {
   protected void onNewState(OperationState state, OperationState prevState) {
     currentSQLStateScope = setMetrics(currentSQLStateScope, MetricsConstant.SQL_OPERATION_PREFIX,
       MetricsConstant.COMPLETED_SQL_OPERATION_PREFIX, state);
+
+    if (state == OperationState.CLOSED) {
+      sqlOpDisplay.closed();
+    } else {
+      //CLOSED state not interesting, state before (FINISHED, ERROR) is.
+      sqlOpDisplay.updateState(state);
+    }
 
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
