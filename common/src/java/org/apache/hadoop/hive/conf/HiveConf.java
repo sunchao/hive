@@ -2124,7 +2124,12 @@ public class HiveConf extends Configuration {
       "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
-      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)");
+      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
+
+    HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
+        "If the query timeout is also set by thrift API call, the smaller one will be taken.");
 
     public final String varname;
     private final String defaultExpr;

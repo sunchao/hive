@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.CharEncoding;
@@ -85,6 +88,8 @@ public class SQLOperation extends ExecuteStatementOperation {
   private SerDe serde = null;
   private boolean fetchStarted = false;
   private volatile MetricsScope currentSQLStateScope;
+  private long queryTimeout;
+  private volatile ScheduledExecutorService timeoutExecutor;
 
   /**
    * A map to track query count running by each user
@@ -133,6 +138,33 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     try {
       driver = new Driver(sqlOperationConf, getParentSession().getUserName());
+
+      // Start the timer thread for cancelling the query when query timeout is reached
+      // queryTimeout == 0 means no timeout
+      if (queryTimeout > 0) {
+        timeoutExecutor = new ScheduledThreadPoolExecutor(1);
+        Runnable timeoutTask = new Runnable() {
+          @Override
+          public void run() {
+            ScheduledExecutorService executor = timeoutExecutor;
+            try {
+              LOG.info("Query timed out after: " + queryTimeout
+                      + " seconds. Cancelling the execution now.");
+              timeoutExecutor = null;
+              SQLOperation.this.cancel();
+            } catch (HiveSQLException e) {
+              LOG.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
+            } finally {
+              // Stop
+              if (executor != null) {
+                executor.shutdown();
+              }
+            }
+          }
+        };
+        timeoutExecutor.schedule(timeoutTask, queryTimeout, TimeUnit.SECONDS);
+      }
+
       sqlOpDisplay.setQueryDisplay(driver.getQueryDisplay());
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
@@ -216,6 +248,8 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void runInternal() throws HiveSQLException {
     setState(OperationState.PENDING);
     final HiveConf opConfig = getConfigForOperation();
+    queryTimeout = HiveConf.getTimeVar(opConfig,
+        HiveConf.ConfVars.HIVE_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     boolean runAsync = shouldRunAsync();
     final boolean asyncPrepare = runAsync
       && HiveConf.getBoolVar(opConfig,
@@ -322,7 +356,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private void cleanup(OperationState state) throws HiveSQLException {
+  private synchronized void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
     if (shouldRunAsync()) {
       Future<?> backgroundHandle = getBackgroundHandle();
@@ -340,6 +374,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     SessionState ss = SessionState.get();
     ss.deleteTmpOutputFile();
     ss.deleteTmpErrOutputFile();
+
+    // Shutdown the timeout thread if any, while closing this operation
+    ScheduledExecutorService executor = timeoutExecutor;
+    if (executor != null) {
+      executor.shutdownNow();
+    }
   }
 
   @Override
