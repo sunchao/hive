@@ -71,10 +71,10 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
   private static final long serialVersionUID = 1L;
   private static transient final Log LOG = LogFactory.getLog(StatsNoJobTask.class);
-  private static ConcurrentMap<String, Partition> partUpdates;
-  private static Table table;
-  private static String tableFullName;
-  private static JobConf jc = null;
+  private ConcurrentMap<String, Partition> partUpdates;
+  private Table table;
+  private String tableFullName;
+  private JobConf jc = null;
 
   public StatsNoJobTask() {
     super();
