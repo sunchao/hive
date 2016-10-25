@@ -50,6 +50,8 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
 import org.apache.parquet.schema.Types;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -59,6 +61,8 @@ import org.apache.parquet.schema.Types;
  *
  */
 public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DataWritableReadSupport.class);
 
   public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
@@ -378,6 +382,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
         MessageType requestedSchemaByUser = getProjectedSchema(tableSchema, columnNamesList,
           indexColumnsWanted, groupPaths);
+        LOG.info("MessageType after projection pruning: " + requestedSchemaByUser);
         return new ReadContext(requestedSchemaByUser, contextMetadata);
       } else {
         return new ReadContext(tableSchema, contextMetadata);

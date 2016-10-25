@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FieldNode {
-  private String fieldName;
+  private final String fieldName;
   private List<FieldNode> nodes;
 
   public FieldNode(String fieldName) {
@@ -36,13 +36,53 @@ public class FieldNode {
   }
 
   public void addFieldNodes(FieldNode... nodes) {
-    if (nodes != null || nodes.length > 0) {
-      this.nodes.addAll(Arrays.asList(nodes));
+    if (nodes != null) {
+      addFieldNodes(Arrays.asList(nodes));
+    }
+  }
+
+  public void addFieldNodes(List<FieldNode> nodes) {
+    for (FieldNode fn : nodes) {
+      if (fn != null) {
+        this.nodes.add(fn);
+      }
     }
   }
 
   public List<FieldNode> getNodes() {
     return nodes;
+  }
+
+  public void setNodes(List<FieldNode> nodes) {
+    this.nodes = nodes;
+  }
+
+  public List<String> toPaths() {
+    List<String> result = new ArrayList<>();
+    if (nodes.isEmpty()) {
+      result.add(fieldName);
+    } else {
+      for (FieldNode child : nodes) {
+        for (String rest : child.toPaths()) {
+          result.add(fieldName + "." + rest);
+        }
+      }
+    }
+    return result;
+  }
+
+  public static FieldNode fromString(String path) {
+    String[] parts = path.split("\\.");
+    return fromString(parts, 0);
+  }
+
+  private static FieldNode fromString(String[] parts, int index) {
+    if (index == parts.length) {
+      return null;
+    }
+    FieldNode fn = new FieldNode(parts[index]);
+    fn.addFieldNodes(fromString(parts, index + 1));
+    return fn;
   }
 
   @Override
@@ -64,6 +104,9 @@ public class FieldNode {
 
   @Override
   public boolean equals(Object object) {
+    if (!(object instanceof FieldNode)) {
+      return false;
+    }
     FieldNode fieldNode = (FieldNode) object;
     if (!fieldName.equals(fieldNode.getFieldName()) || fieldNode.getNodes().size() != fieldNode
       .getNodes().size()) {
@@ -71,7 +114,7 @@ public class FieldNode {
     }
 
     for (int i = 0; i < fieldNode.getNodes().size(); i++) {
-      if (fieldNode.getNodes().get(i).equals(nodes.get(i))) {
+      if (!fieldNode.getNodes().get(i).equals(nodes.get(i))) {
         return false;
       }
     }

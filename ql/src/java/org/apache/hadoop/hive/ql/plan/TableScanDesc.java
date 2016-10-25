@@ -202,6 +202,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return neededColumnIDs;
   }
 
+  @Explain(displayName = "NestedColPaths", explainLevels = Level.EXTENDED)
   public List<String> getNeededNestedColumnPaths() {
     return neededNestedColumnPaths;
   }
