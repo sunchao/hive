@@ -13,57 +13,22 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.createHiveColumnsFrom;
+import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.createHiveTypeInfoFrom;
+import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.testConversion;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import parquet.schema.MessageType;
+import parquet.schema.OriginalType;
+import parquet.schema.Type.Repetition;
 import org.junit.Test;
 
-import parquet.schema.MessageType;
-import parquet.schema.MessageTypeParser;
-import parquet.schema.OriginalType;
-import parquet.schema.Types;
-import parquet.schema.PrimitiveType.PrimitiveTypeName;
-import parquet.schema.Type.Repetition;
 
 public class TestHiveSchemaConverter {
-
-  private List<String> createHiveColumnsFrom(final String columnNamesStr) {
-    List<String> columnNames;
-    if (columnNamesStr.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNamesStr.split(","));
-    }
-
-    return columnNames;
-  }
-
-  private List<TypeInfo> createHiveTypeInfoFrom(final String columnsTypeStr) {
-    List<TypeInfo> columnTypes;
-
-    if (columnsTypeStr.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnsTypeStr);
-    }
-
-    return columnTypes;
-  }
-
-  private void testConversion(final String columnNamesStr, final String columnsTypeStr, final String expectedSchema) throws Exception {
-    final List<String> columnNames = createHiveColumnsFrom(columnNamesStr);
-    final List<TypeInfo> columnTypes = createHiveTypeInfoFrom(columnsTypeStr);
-    final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes);
-    final MessageType expectedMT = MessageTypeParser.parseMessageType(expectedSchema);
-    assertEquals("converting " + columnNamesStr + ": " + columnsTypeStr + " to " + expectedSchema, expectedMT, messageTypeFound);
-  }
 
   @Test
   public void testSimpleType() throws Exception {

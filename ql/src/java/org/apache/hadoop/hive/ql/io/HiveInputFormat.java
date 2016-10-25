@@ -542,7 +542,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         TableScanOperator ts = (TableScanOperator) op;
         // push down projections.
         ColumnProjectionUtils.appendReadColumns(
-            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns());
+            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
         // push down filters
         pushFilters(jobConf, ts);
       }

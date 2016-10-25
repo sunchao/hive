@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
@@ -341,7 +340,7 @@ public final class ColumnPrunerProcFactory {
       }
       return columns;
     }
-    
+
     /*
      * add any input columns referenced in WindowFn args or expressions.
      */
@@ -446,11 +445,14 @@ public final class ColumnPrunerProcFactory {
       }
 
       cols = cols == null ? new ArrayList<String>() : cols;
+      List nestedCols = cppCtx.genNestedColPaths((Operator<? extends OperatorDesc>) nd);
 
-      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
-          cols);
+      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd, cols);
+      cppCtx.getPrunedNestedColLists().put((Operator<? extends OperatorDesc>) nd, nestedCols);
       RowSchema inputRS = scanOp.getSchema();
       setupNeededColumns(scanOp, inputRS, cols);
+
+      scanOp.setNeededNestedColumnPaths(nestedCols);
 
       return null;
     }
@@ -668,12 +670,12 @@ public final class ColumnPrunerProcFactory {
       ((SelectDesc)select.getConf()).setColList(colList);
       ((SelectDesc)select.getConf()).setOutputColumnNames(outputColNames);
       pruneOperator(ctx, select, outputColNames);
-      
+
       Operator<?> udtfPath = op.getChildOperators().get(LateralViewJoinOperator.UDTF_TAG);
       List<String> lvFCols = new ArrayList<String>(cppCtx.getPrunedColLists().get(udtfPath));
       lvFCols = Utilities.mergeUniqElems(lvFCols, outputColNames);
       pruneOperator(ctx, op, lvFCols);
-      
+
       return null;
     }
   }
@@ -728,7 +730,7 @@ public final class ColumnPrunerProcFactory {
       // and return the ones which have a marked column
       cppCtx.getPrunedColLists().put(op,
           cppCtx.getSelectColsFromChildren(op, cols));
-
+      cppCtx.getPrunedNestedColLists().put(op, cppCtx.getSelectNestedColPathsFromChildren(op, cols));
       if (cols == null || conf.isSelStarNoCompute()) {
         return null;
       }
