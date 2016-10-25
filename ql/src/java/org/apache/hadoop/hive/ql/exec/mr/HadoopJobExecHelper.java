@@ -443,6 +443,10 @@ public class HadoopJobExecHelper {
           + rj.getTrackingURL());
       console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
           + " job  -kill " + rj.getID());
+      if (this.task.getQueryPlan() != null) {
+        console.printInfo("For more details, please go to Attis URL https://attis.uberinternal.com/query/"
+            + this.task.getQueryPlan().getQueryId());
+      }
     }
   }
 
@@ -565,7 +569,14 @@ public class HadoopJobExecHelper {
 
     String statusMesg = getJobEndMsg(rj.getID());
     if (!success) {
-      statusMesg += " with errors";
+      if (this.task.getQueryPlan() != null) {
+        statusMesg += " with errors. For troubleshooting, please go to Attis URL "
+            + "https://attis.uberinternal.com/query/"
+            + this.task.getQueryPlan().getQueryId();
+      } else {
+        statusMesg += " with errors";
+      }
+
       returnVal = 2;
       console.printError(statusMesg);
       if (HiveConf.getBoolVar(job, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO) ||
