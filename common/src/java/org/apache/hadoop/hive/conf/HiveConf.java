@@ -339,11 +339,12 @@ public class HiveConf extends Configuration {
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
         "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/index/function"),
-
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
 
     HIVE_FILE_MAX_FOOTER("hive.file.max.footer", 100,
         "maximum number of lines for footer user can define for a table file"),
+
+    HIVE_PRUNE_NESTED_COL("hive.prune.nested.col", false, "Whether to prune nested columns"),
 
     HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES("hive.resultset.use.unique.column.names", true,
         "Make column names unique in the result set by qualifying column names with table alias if needed.\n" +

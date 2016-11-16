@@ -31,6 +31,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -456,6 +457,9 @@ public final class ColumnPrunerProcFactory {
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd, cols);
       RowSchema inputRS = scanOp.getSchema();
       setupNeededColumns(scanOp, inputRS, cols);
+      if (!cppCtx.getParseContext().getConf().getBoolVar(HiveConf.ConfVars.HIVE_PRUNE_NESTED_COL)) {
+        scanOp.setNeededNestedColumnPaths(new ArrayList<String>());
+      }
 
       return null;
     }
