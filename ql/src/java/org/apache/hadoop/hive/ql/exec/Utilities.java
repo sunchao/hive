@@ -1198,8 +1198,16 @@ public final class Utilities {
       kryo.register(SequenceFileInputFormat.class);
       kryo.register(HiveSequenceFileOutputFormat.class);
       return kryo;
-    };
+    }
+
+    @Override
+    public Kryo get() {
+      Kryo kryo = super.get();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      return kryo;
+    }
   };
+
   @SuppressWarnings("rawtypes")
   protected static void removeField(Kryo kryo, Class type, String fieldName) {
     FieldSerializer fld = new FieldSerializer(kryo, type);
@@ -1235,7 +1243,14 @@ public final class Utilities {
       kryo.register(SequenceFileInputFormat.class);
       kryo.register(HiveSequenceFileOutputFormat.class);
       return kryo;
-    };
+    }
+
+    @Override
+    public Kryo get() {
+      Kryo kryo = super.get();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      return kryo;
+    }
   };
 
   private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
@@ -1263,7 +1278,14 @@ public final class Utilities {
       kryo.register(SequenceFileInputFormat.class);
       kryo.register(HiveSequenceFileOutputFormat.class);
       return kryo;
-    };
+    }
+
+    @Override
+    public Kryo get() {
+      Kryo kryo = super.get();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      return kryo;
+    }
   };
 
   public static TableDesc defaultTd;
