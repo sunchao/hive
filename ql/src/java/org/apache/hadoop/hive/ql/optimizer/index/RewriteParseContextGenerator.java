@@ -107,9 +107,9 @@ public final class RewriteParseContextGenerator {
       ASTNode ast, Context ctx) throws SemanticException {
     QB qb = new QB(null, null, false);
     ASTNode child = ast;
-    ParseContext subPCtx = sem.getParseContext();
+    ParseContext subPCtx = ((SemanticAnalyzer) sem).getParseContext();
     subPCtx.setContext(ctx);
-    sem.initParseCtx(subPCtx);
+    ((SemanticAnalyzer) sem).initParseCtx(subPCtx);
 
     LOG.info("Starting Sub-query Semantic Analysis");
     sem.doPhase1(child, qb, sem.initPhase1Ctx(), null);
