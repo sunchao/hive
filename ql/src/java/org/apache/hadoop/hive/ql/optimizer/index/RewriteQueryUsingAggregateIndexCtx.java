@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -214,7 +215,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
         (HashMap<String, Operator<? extends OperatorDesc>>) topOps);
 
     ColumnPrunerProcFactory.setupNeededColumns(scanOperator, rs,
-        Arrays.asList(rewriteQueryCtx.getIndexKey()));
+        Arrays.asList(new FieldNode(rewriteQueryCtx.getIndexKey())));
   }
 
   /**
