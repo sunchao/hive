@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.spark.status.LocalSparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -81,6 +82,13 @@ public class SparkTask extends Task<SparkWork> {
   private SparkCounters sparkCounters;
   private transient String sparkJobID;
   private transient SparkStatistics sparkStatistics;
+  private transient long submitTime;
+  private transient long startTime;
+  private transient long finishTime;
+  private transient int succeededTaskCount;
+  private transient int totalTaskCount;
+  private transient int failedTaskCount;
+  private transient List<Integer> stageIds;
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
@@ -102,6 +110,7 @@ public class SparkTask extends Task<SparkWork> {
       sparkWork.setRequiredCounterPrefix(getCounterPrefixes());
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
+      submitTime = perfLogger.getStartTime(PerfLogger.SPARK_SUBMIT_JOB);
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
@@ -110,6 +119,7 @@ public class SparkTask extends Task<SparkWork> {
       this.jobID = jobRef.getSparkJobStatus().getAppID();
       rc = jobRef.monitorJob();
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
+      getSparkJobInfo(sparkJobStatus);
       if (rc == 0) {
         sparkCounters = sparkJobStatus.getCounter();
         // for RSC, we should get the counters after job has finished
@@ -135,6 +145,8 @@ public class SparkTask extends Task<SparkWork> {
       LOG.error(msg, e);
       rc = 1;
     } finally {
+      startTime = perfLogger.getEndTime(PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+      finishTime = perfLogger.getEndTime(PerfLogger.SPARK_RUN_JOB);
       Utilities.clearWork(conf);
       if (sparkSession != null && sparkSessionManager != null) {
         rc = close(rc);
@@ -241,6 +253,34 @@ public class SparkTask extends Task<SparkWork> {
 
   public SparkCounters getSparkCounters() {
     return sparkCounters;
+  }
+
+  public int getSucceededTaskCount() {
+    return succeededTaskCount;
+  }
+
+  public int getTotalTaskCount() {
+    return totalTaskCount;
+  }
+
+  public int getFailedTaskCount() {
+    return failedTaskCount;
+  }
+
+  public List<Integer> getStageIds() {
+    return stageIds;
+  }
+
+  public long getStartTime() {
+    return startTime;
+  }
+
+  public long getSubmitTime() {
+    return submitTime;
+  }
+
+  public long getFinishTime() {
+    return finishTime;
   }
 
   /**
@@ -412,5 +452,35 @@ public class SparkTask extends Task<SparkWork> {
     }
 
     return counters;
+  }
+
+  private void getSparkJobInfo(SparkJobStatus sparkJobStatus) {
+    try {
+      stageIds = new ArrayList<Integer>();
+      int[] ids = sparkJobStatus.getStageIds();
+      if (ids != null) {
+        for (int stageId : ids) {
+          stageIds.add(stageId);
+        }
+      }
+      Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
+      int sumTotal = 0;
+      int sumComplete = 0;
+      int sumFailed = 0;
+      for (String s : progressMap.keySet()) {
+        SparkStageProgress progress = progressMap.get(s);
+        final int complete = progress.getSucceededTaskCount();
+        final int total = progress.getTotalTaskCount();
+        final int failed = progress.getFailedTaskCount();
+        sumTotal += total;
+        sumComplete += complete;
+        sumFailed += failed;
+      }
+      succeededTaskCount = sumComplete;
+      totalTaskCount = sumTotal;
+      failedTaskCount = sumFailed;
+    } catch (Exception e) {
+      LOG.error("Failed to get Spark job information", e);
+    }
   }
 }
