@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -654,6 +655,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
         }
 
+        String invalidPartitionVal;
+        if((invalidPartitionVal = getPartitionValWithInvalidCharacter(dpVals, dpCtx.getWhiteListPattern()))!=null) {
+          throw new HiveFatalException("Partition value '" + invalidPartitionVal +
+              "' contains a character not matched by whitelist pattern '" +
+              dpCtx.getWhiteListPattern().toString() + "'.  " + "(configure with " +
+              HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+        }
         fpaths = getDynOutPaths(dpVals, lbDirName);
 
         // use SubStructObjectInspector to serialize the non-partitioning columns in the input row
@@ -732,6 +740,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (SerDeException e) {
       throw new HiveException(e);
     }
+  }
+
+  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    if (partitionValidationPattern == null) {
+      return null;
+    }
+
+    for (String partVal : partVals) {
+      if (!partitionValidationPattern.matcher(partVal).matches()) {
+        return partVal;
+      }
+    }
+
+    return null;
   }
 
   protected boolean areAllTrue(boolean[] statsFromRW) {
