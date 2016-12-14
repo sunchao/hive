@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.HadoopShims;
 
 /**
  * CommandProcessorFactory.
@@ -97,7 +98,12 @@ public final class CommandProcessorFactory {
         return new ReloadProcessor();
       case CRYPTO:
         try {
-          return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);
+          HadoopShims.HdfsEncryptionShim shim = SessionState.get().getHdfsEncryptionShim();
+          if (shim == null && conf.getBoolean(HiveConf.ConfVars.HIVE_SKIP_HDFS_ENCRYPTION.name(), false)) {
+            throw new HiveException("Attempting to use CRYPTO command but HDFS encryption is disabled. " +
+                "Please set hive.skip.hdfs.encryption=false first.");
+          }
+          return new CryptoProcessor(shim, conf);
         } catch (HiveException e) {
           throw new SQLException("Fail to start the command processor due to the exception: ", e);
         }

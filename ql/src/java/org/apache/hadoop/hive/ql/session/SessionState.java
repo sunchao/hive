@@ -424,6 +424,9 @@ public class SessionState {
   }
 
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
+    if (this.conf.getBoolean(ConfVars.HIVE_SKIP_HDFS_ENCRYPTION.name(), false)) {
+      return null;
+    }
     if (hdfsEncryptionShim == null) {
       try {
         FileSystem fs = FileSystem.get(conf);

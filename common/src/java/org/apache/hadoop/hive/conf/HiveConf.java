@@ -309,6 +309,7 @@ public class HiveConf extends Configuration {
         "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
         "The user has to be aware that the dynamic partition value should not contain this value to avoid confusions."),
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__", ""),
+    HIVE_SKIP_HDFS_ENCRYPTION("hive.skip.hdfs.encryption", false, "Whether to skip HDFS encryption"),
 
     // Whether to show a link to the most failed task + debugging tips
     SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true,
