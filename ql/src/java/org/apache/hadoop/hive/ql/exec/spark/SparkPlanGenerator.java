@@ -275,6 +275,7 @@ public class SparkPlanGenerator {
           scratchDir, context, false);
       Utilities.setInputPaths(cloned, inputPaths);
       Utilities.setMapWork(cloned, (MapWork) work, scratchDir, false);
+      cloned.setBoolean(Utilities.HAS_REDUCE_WORK, false);
       Utilities.createTmpDirs(cloned, (MapWork) work);
       if (work instanceof MergeFileWork) {
         MergeFileWork mergeFileWork = (MergeFileWork) work;
@@ -290,6 +291,7 @@ public class SparkPlanGenerator {
     } else if (work instanceof ReduceWork) {
       cloned.setBoolean("mapred.task.is.map", false);
       Utilities.setReduceWork(cloned, (ReduceWork) work, scratchDir, false);
+      cloned.setBoolean(Utilities.HAS_MAP_WORK, false);
       Utilities.createTmpDirs(cloned, (ReduceWork) work);
       cloned.set(Utilities.MAPRED_REDUCER_CLASS, ExecReducer.class.getName());
     }

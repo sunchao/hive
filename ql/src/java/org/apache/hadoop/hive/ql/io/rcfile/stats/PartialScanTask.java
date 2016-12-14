@@ -129,6 +129,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
     // zero reducers
     job.setNumReduceTasks(0);
+    job.setBoolean(Utilities.HAS_REDUCE_WORK, false);
 
     if (work.getMinSplitSize() != null) {
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work

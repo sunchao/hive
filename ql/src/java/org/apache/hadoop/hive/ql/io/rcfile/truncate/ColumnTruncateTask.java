@@ -106,6 +106,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     // zero reducers
     job.setNumReduceTasks(0);
+    job.setBoolean(Utilities.HAS_REDUCE_WORK, false);
 
     if (work.getMinSplitSize() != null) {
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work

@@ -96,6 +96,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       job.setOutputKeyClass(NullWritable.class);
       job.setOutputValueClass(NullWritable.class);
       job.setNumReduceTasks(0);
+      job.setBoolean(Utilities.HAS_REDUCE_WORK, false);
 
       // create the temp directories
       Path outputPath = work.getOutputDir();

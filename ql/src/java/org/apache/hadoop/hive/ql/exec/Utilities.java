@@ -214,6 +214,8 @@ public final class Utilities {
   public static String REDUCE_PLAN_NAME = "reduce.xml";
   public static String MERGE_PLAN_NAME = "merge.xml";
   public static final String INPUT_NAME = "iocontext.input.name";
+  public static final String HAS_MAP_WORK = "has.map.work";
+  public static final String HAS_REDUCE_WORK = "has.reduce.work";
   public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
   public static final String HIVE_ADDED_JARS = "hive.added.jars";
@@ -306,6 +308,9 @@ public final class Utilities {
   }
 
   public static MapWork getMapWork(Configuration conf) {
+    if (!conf.getBoolean(HAS_MAP_WORK, true)) {
+      return null;
+    }
     return (MapWork) getBaseWork(conf, MAP_PLAN_NAME);
   }
 
@@ -314,6 +319,9 @@ public final class Utilities {
   }
 
   public static ReduceWork getReduceWork(Configuration conf) {
+    if (!conf.getBoolean(HAS_REDUCE_WORK, true)) {
+      return null;
+    }
     return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
   }
 

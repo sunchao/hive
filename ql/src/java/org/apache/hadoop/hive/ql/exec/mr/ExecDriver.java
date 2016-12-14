@@ -268,6 +268,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     job.setNumReduceTasks(rWork != null ? rWork.getNumReduceTasks().intValue() : 0);
     job.setReducerClass(ExecReducer.class);
+    if (rWork == null) {
+      job.setBoolean(Utilities.HAS_REDUCE_WORK, false);
+    }
 
     // set input format information if necessary
     setInputAttributes(job);
