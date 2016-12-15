@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import io.netty.util.concurrent.Promise;
 
@@ -143,6 +142,11 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
         }
       }
     }
+  }
+
+  @Override
+  public Throwable getError() {
+    return promise.cause();
   }
 
   public void setSparkCounters(SparkCounters sparkCounters) {

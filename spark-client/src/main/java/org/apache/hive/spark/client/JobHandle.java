@@ -68,6 +68,8 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
    */
   void addListener(Listener<T> l);
 
+  Throwable getError();
+
   /**
    * The current state of the submitted job.
    */

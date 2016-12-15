@@ -138,4 +138,8 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     return rc;
   }
+
+  public Throwable getError() {
+	return null;
+  }
 }
