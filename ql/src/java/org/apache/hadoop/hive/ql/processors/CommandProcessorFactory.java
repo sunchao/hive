@@ -99,7 +99,7 @@ public final class CommandProcessorFactory {
       case CRYPTO:
         try {
           HadoopShims.HdfsEncryptionShim shim = SessionState.get().getHdfsEncryptionShim();
-          if (shim == null && conf.getBoolean(HiveConf.ConfVars.HIVE_SKIP_HDFS_ENCRYPTION.name(), false)) {
+          if (shim == null && conf.getBoolean(HiveConf.ConfVars.HIVE_SKIP_HDFS_ENCRYPTION.varname, false)) {
             throw new HiveException("Attempting to use CRYPTO command but HDFS encryption is disabled. " +
                 "Please set hive.skip.hdfs.encryption=false first.");
           }
