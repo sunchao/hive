@@ -1,3 +1,4 @@
+set hive.prune.nested.col = true;
 set hive.fetch.task.conversion = none;
 
 -- First, create source tables
