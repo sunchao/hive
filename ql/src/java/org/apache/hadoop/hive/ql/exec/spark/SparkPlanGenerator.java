@@ -213,11 +213,12 @@ public class SparkPlanGenerator {
   private ShuffleTran generate(SparkPlan sparkPlan, SparkEdgeProperty edge, boolean toCache) {
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
+    long maxBufferSize = Long.parseLong(this.jobConf.get(HiveConf.ConfVars.SPARK_SHUFFLE_BUFFER_SIZE.varname));
     SparkShuffler shuffler;
     if (edge.isMRShuffle()) {
-      shuffler = new SortByShuffler(false, sparkPlan);
+      shuffler = new SortByShuffler(false, sparkPlan, maxBufferSize);
     } else if (edge.isShuffleSort()) {
-      shuffler = new SortByShuffler(true, sparkPlan);
+      shuffler = new SortByShuffler(true, sparkPlan, maxBufferSize);
     } else {
       shuffler = new GroupByShuffler();
     }

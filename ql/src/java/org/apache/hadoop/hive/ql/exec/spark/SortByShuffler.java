@@ -27,19 +27,22 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 
 public class SortByShuffler implements SparkShuffler {
-
   private final boolean totalOrder;
   private final SparkPlan sparkPlan;
+  private final long maxBufferSize;
 
   /**
    * @param totalOrder whether this shuffler provides total order shuffle.
    */
-  public SortByShuffler(boolean totalOrder, SparkPlan sparkPlan) {
+  public SortByShuffler(boolean totalOrder, SparkPlan sparkPlan, long maxBufferSize) {
     this.totalOrder = totalOrder;
     this.sparkPlan = sparkPlan;
+    this.maxBufferSize = maxBufferSize;
   }
 
   @Override
@@ -60,7 +63,7 @@ public class SortByShuffler implements SparkShuffler {
       Partitioner partitioner = new HashPartitioner(numPartitions);
       rdd = input.repartitionAndSortWithinPartitions(partitioner);
     }
-    return rdd.mapPartitionsToPair(new ShuffleFunction());
+    return rdd.mapPartitionsToPair(new ShuffleFunction(maxBufferSize));
   }
 
   @Override
@@ -73,14 +76,19 @@ public class SortByShuffler implements SparkShuffler {
           HiveKey, Iterable<BytesWritable>> {
     // make eclipse happy
     private static final long serialVersionUID = 1L;
+    private final long maxBufferSize;
+
+    ShuffleFunction(long maxBufferSize) {
+      this.maxBufferSize = maxBufferSize;
+    }
 
     @Override
     public Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> call(
       final Iterator<Tuple2<HiveKey, BytesWritable>> it) throws Exception {
-      // Use input iterator to back returned iterable object.
+
       return new Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>() {
         HiveKey curKey = null;
-        List<BytesWritable> curValues = new ArrayList<BytesWritable>();
+        HiveBytesWritableCache curValues = new HiveBytesWritableCache(maxBufferSize);
 
         @Override
         public boolean hasNext() {
@@ -89,16 +97,17 @@ public class SortByShuffler implements SparkShuffler {
 
         @Override
         public Tuple2<HiveKey, Iterable<BytesWritable>> next() {
-          // TODO: implement this by accumulating rows with the same key into a list.
-          // Note that this list needs to improved to prevent excessive memory usage, but this
-          // can be done in later phase.
+          if (!hasNext()) {
+            throw new NoSuchElementException("No more next");
+          }
           while (it.hasNext()) {
             Tuple2<HiveKey, BytesWritable> pair = it.next();
             if (curKey != null && !curKey.equals(pair._1())) {
               HiveKey key = curKey;
-              List<BytesWritable> values = curValues;
+              HiveBytesWritableCache values = curValues;
+              values.startRead();
               curKey = pair._1();
-              curValues = new ArrayList<BytesWritable>();
+              curValues = new HiveBytesWritableCache(maxBufferSize);
               curValues.add(pair._2());
               return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, values);
             }
@@ -111,13 +120,12 @@ public class SortByShuffler implements SparkShuffler {
           // if we get here, this should be the last element we have
           HiveKey key = curKey;
           curKey = null;
+          curValues.startRead();
           return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, curValues);
         }
 
         @Override
         public void remove() {
-          // Not implemented.
-          // throw Unsupported Method Invocation Exception.
           throw new UnsupportedOperationException();
         }
 
